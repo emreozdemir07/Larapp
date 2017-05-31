@@ -1,25 +1,32 @@
 package com.example.lenovo.larapp_deneme;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
 import android.os.Bundle;
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-public class ThirdModule extends Activity {
+public class ThirdModule extends Activity implements View.OnClickListener {
 
-    MediaPlayer mp;
-    Random rnd = new Random();
-    ConstraintLayout layout;
-    int[] sayi = {0, 0, 0};
+    private static final String TAG = ThirdModule.class.getSimpleName();
+    private Random rnd = new Random();
+    private ConstraintLayout layout;
+    private ImageButton imageButton, imageButton2, imageButton3, imageButton4;
+    private MediaPlayer error,different;
+    private List<Integer> numbers = new ArrayList<>();
+    private boolean isMediaReady = true;
 
     final int[] anaresim = {
-            R.drawable.basketball1,R.drawable.car1,R.drawable.clothes1,R.drawable.footbal1,
-            R.drawable.leptop1,R.drawable.moto1,R.drawable.okul1,R.drawable.sky1
-            };
+            R.drawable.basketball1, R.drawable.car1, R.drawable.clothes1, R.drawable.footbal1,
+            R.drawable.leptop1, R.drawable.moto1, R.drawable.okul1, R.drawable.sky1
+    };
 
     final int[][] resim = {
             {
@@ -48,15 +55,8 @@ public class ThirdModule extends Activity {
             }
     };
 
-
-    final int[] arkaplan = {R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4, R.drawable.bg5};
-
-
     int correct, mod;
-    int wrong = R.raw.error;
 
-
-    ImageButton img1,img2,img3,img4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,108 +64,157 @@ public class ThirdModule extends Activity {
         setContentView(R.layout.third_module);
         layout = (ConstraintLayout) findViewById(R.id.third_module);
 
-        img1 = (ImageButton) findViewById(R.id.imageButton);
-        img2 = (ImageButton) findViewById(R.id.imageButton2);
-        img3 = (ImageButton) findViewById(R.id.imageButton3);
-        img4 = (ImageButton) findViewById(R.id.imageButton4);
+        imageButton = (ImageButton) findViewById(R.id.imageButton);
+        imageButton.setOnClickListener(this);
+        imageButton2 = (ImageButton) findViewById(R.id.imageButton2);
+        imageButton2.setOnClickListener(this);
+        imageButton3 = (ImageButton) findViewById(R.id.imageButton3);
+        imageButton3.setOnClickListener(this);
+        imageButton4 = (ImageButton) findViewById(R.id.imageButton4);
 
+        differentsound();
 
-        final MediaPlayer error = MediaPlayer.create(ThirdModule.this, R.raw.error);
-
-        img1.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (correct == 0) {
-
-                    //EnterActivity.change(ThirdModule.this);
-                    Intent intent = new Intent(ThirdModule.this, ThirdModule.class);
-                    startActivity(intent);
-                    finish();
-
-                } else {
-
-                    error.start();
-                    error.stop();
-                    error.reset();
-                    error.release();
-
-                }
-            }
-
-
-        });
-
-        img2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (correct == 1) {
-
-                    //EnterActivity.change(ThirdModule.this);
-                    Intent intent = new Intent(ThirdModule.this, ThirdModule.class);
-                    startActivity(intent);
-                    finish();
-
-                } else {
-
-                    error.start();
-                    error.stop();
-                    error.reset();
-                    error.release();
-
-                }
-            }
-        });
-
-        img3.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (correct == 2) {
-
-                    //EnterActivity.change(ThirdModule.this);
-                    Intent intent = new Intent(ThirdModule.this, ThirdModule.class);
-                    startActivity(intent);
-                    finish();
-
-                } else {
-
-                    error.start();
-                    error.stop();
-                    error.reset();
-                    error.release();
-
-                }
-            }
-        });
-        nextlevel();
+        nextLevel();
     }
 
-    void nextlevel() {
+    void nextLevel() {
 
-        mod = rnd.nextInt(resim.length);
-        sayi[0] = rnd.nextInt(resim[mod].length);
+        mod = rnd.nextInt(resim.length - 1);
+        Log.i(TAG, "MOD : " + mod);
+        imageButton4.setImageResource(anaresim[mod]);
 
-        while (true) {
-            sayi[1] = rnd.nextInt(resim[mod].length);
-            if (sayi[1] != sayi[0]) break;
-        }
 
-        while (true) {
-            sayi[2] = rnd.nextInt(resim[mod].length);
-            if (sayi[2] != sayi[0] && sayi[2] != sayi[1]) break;
-        }
+        calcucateNumbers(mod);
 
+        rnd = new Random();
         correct = rnd.nextInt(3);
 
-        layout.setBackgroundResource(arkaplan[mod]);
+        Log.i(TAG, "Correct :" + correct);
 
-        Random rndm = new Random();
-        int a1 = rndm.nextInt(anaresim.length);
+        layout.setBackgroundResource(R.drawable.thirdmodulebackground);
 
+        int selectCorrectPic;
+        while (true) {
+            rnd = new Random();
+            selectCorrectPic = rnd.nextInt(anaresim.length);
 
+            if (selectCorrectPic != mod) {
+                break;
+            }
 
-        //img1.setImageResource(resim[mod][sayi[0]]);
-        //img2.setImageResource(resim[mod][sayi[1]]);
-        //img3.setImageResource(resim[mod][sayi[2]]);
-        img4.setImageResource(anaresim[mod]);
+        }
+        if (correct == 0) {
+            imageButton.setImageResource(resim[selectCorrectPic][rnd.nextInt(resim[selectCorrectPic].length)]);
+            imageButton2.setImageResource(resim[mod][numbers.get(0)]);
+            imageButton3.setImageResource(resim[mod][numbers.get(1)]);
+        } else if (correct == 1) {
+            imageButton2.setImageResource(resim[selectCorrectPic][rnd.nextInt(resim[selectCorrectPic].length)]);
+            imageButton.setImageResource(resim[mod][numbers.get(0)]);
+            imageButton3.setImageResource(resim[mod][numbers.get(1)]);
+        } else if (correct == 2) {
+            imageButton3.setImageResource(resim[selectCorrectPic][rnd.nextInt(resim[selectCorrectPic].length)]);
+            imageButton.setImageResource(resim[mod][numbers.get(0)]);
+            imageButton2.setImageResource(resim[mod][numbers.get(1)]);
+        }
+
 
     }
+
+    @Override
+    public void onClick(View v) {
+
+        boolean isErrorOccured = false;
+        if (v.equals(imageButton)) {
+            if (correct != 0) {
+                errorSound();
+                isErrorOccured = true;
+            }
+
+        } else if (v.equals(imageButton2)) {
+
+            if (correct != 1) {
+                errorSound();
+                isErrorOccured = true;
+            }
+
+        } else if (v.equals(imageButton3)) {
+
+            if (correct != 2) {
+                errorSound();
+                isErrorOccured = true;
+            }
+
+        }
+        if(!isErrorOccured) {
+            EnterActivity.change(ThirdModule.this);
+        }
+
+    }
+
+    private void calcucateNumbers(int mod) {
+
+        List<Integer> selectedList = new ArrayList<>();
+
+        int listSize = resim[mod].length;
+        Log.i(TAG, "List Size " + listSize);
+
+
+        while (true) {
+            if (listSize > 0) {
+                rnd = new Random();
+                int randomNumber = rnd.nextInt(resim[mod].length);
+                Log.i(TAG, "Random Number : " + randomNumber);
+                if (!selectedList.contains(randomNumber)) {
+                    numbers.add(randomNumber);
+                    selectedList.add(randomNumber);
+                    Log.i(TAG, "Adding to list : " + randomNumber);
+                    listSize--;
+                } else {
+                    Log.i(TAG, "Number already in list : " + randomNumber);
+
+                }
+            } else {
+                Log.i(TAG, "List generated : " + numbers.toString());
+                break;
+            }
+        }
+
+    }
+
+    private synchronized void errorSound() {
+
+        if (isMediaReady) {
+            error = MediaPlayer.create(ThirdModule.this, R.raw.error);
+            error.start();
+            isMediaReady = false;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    error.stop();
+                    error.release();
+                    isMediaReady = true;
+                }
+            }, 500L);
+        }
+    }
+
+    private synchronized void differentsound() {
+
+        if (isMediaReady) {
+            different = MediaPlayer.create(ThirdModule.this, R.raw.different);
+            different.start();
+            isMediaReady = false;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    different.stop();
+                    different.release();
+                    isMediaReady = true;
+                }
+            }, 2100L);
+        }
+    }
+
 }
-
-

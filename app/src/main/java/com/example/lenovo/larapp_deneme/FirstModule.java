@@ -1,6 +1,7 @@
 package com.example.lenovo.larapp_deneme;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
 import android.os.Bundle;
 import android.media.MediaPlayer;
@@ -10,7 +11,8 @@ import java.util.Random;
 
 public class FirstModule extends Activity {
 
-    MediaPlayer mp;
+    private MediaPlayer wrongmusic,question;
+    private boolean isMediaReady = true;
     Random rnd = new Random();
     ConstraintLayout layout;
     int[] sayi = {0, 0, 0};
@@ -64,10 +66,7 @@ public class FirstModule extends Activity {
 
     final int[] arkaplan = {R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4, R.drawable.bg5};
 
-
     int correct, mod;
-    int wrong = R.raw.error;
-
 
     ImageButton img1;
     ImageButton img2;
@@ -83,8 +82,6 @@ public class FirstModule extends Activity {
         img2 = (ImageButton) findViewById(R.id.imageButton2);
         img3 = (ImageButton) findViewById(R.id.imageButton3);
 
-        final MediaPlayer error = MediaPlayer.create(FirstModule.this, R.raw.error);
-
         img1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (correct == 0) {
@@ -93,18 +90,8 @@ public class FirstModule extends Activity {
 
                 } else {
 
-                    error.start();
-                    error.setOnCompletionListener(
+                    wronganswer();
 
-                            new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mp) {
-                                    mp = MediaPlayer.create(FirstModule.this, ses[mod][sayi[correct]]);
-                                    mp.start();
-                                    mp = null;
-                                }
-                            }
-                    );
                 }
             }
 
@@ -118,17 +105,9 @@ public class FirstModule extends Activity {
                     EnterActivity.change(FirstModule.this);
 
                 } else {
-                    error.start();
-                    error.setOnCompletionListener(
-                            new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mp) {
-                                    mp = MediaPlayer.create(FirstModule.this, ses[mod][sayi[correct]]);
-                                    mp.start();
-                                    mp = null;
-                                }
-                            }
-                    );
+
+                    wronganswer();
+
                 }
             }
         });
@@ -140,24 +119,53 @@ public class FirstModule extends Activity {
                     EnterActivity.change(FirstModule.this);
 
                 } else {
-                    error.start();
-                    error.setOnCompletionListener(
-                            new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mp) {
-                                    mp = MediaPlayer.create(FirstModule.this, ses[mod][sayi[correct]]);
-                                    mp.start();
-                                    mp = null;
-                                }
-                            }
-                    );
+
+                    wronganswer();
+
                 }
             }
         });
+
         nextlevel();
     }
 
-    void nextlevel() {
+    private synchronized void wronganswer() {
+
+        if (isMediaReady) {
+            wrongmusic = MediaPlayer.create(FirstModule.this, R.raw.error);
+            wrongmusic.start();
+            isMediaReady = false;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    wrongmusic.stop();
+                    wrongmusic.release();
+                    isMediaReady = true;
+                }
+            }, 500L);
+        }
+    }
+
+    private synchronized void questions() {
+
+        if (isMediaReady) {
+            question = MediaPlayer.create(FirstModule.this, ses[mod][sayi[correct]]);
+            question.start();
+            isMediaReady = false;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    question.stop();
+                    question.release();
+                    isMediaReady = true;
+                }
+            }, 2100L);
+        }
+    }
+
+    private synchronized void nextlevel() {
 
         mod = rnd.nextInt(resim.length);
         sayi[0] = rnd.nextInt(resim[mod].length);
@@ -173,14 +181,9 @@ public class FirstModule extends Activity {
         }
 
         correct = rnd.nextInt(3);
-        mp = MediaPlayer.create(FirstModule.this, ses[mod][sayi[correct]]);
-        mp.start();
+        questions();
 
         layout.setBackgroundResource(arkaplan[mod]);
-
-
-
-
         img1.setImageResource(resim[mod][sayi[0]]);
         img2.setImageResource(resim[mod][sayi[1]]);
         img3.setImageResource(resim[mod][sayi[2]]);

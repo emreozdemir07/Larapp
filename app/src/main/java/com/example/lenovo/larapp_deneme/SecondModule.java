@@ -2,71 +2,48 @@ package com.example.lenovo.larapp_deneme;
 
 import android.app.Activity;
 import android.media.MediaPlayer;
-import android.content.Intent;
-import android.media.Image;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-
-import java.util.*;
-
-import java.lang.reflect.Array;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 
-public class SecondModule extends Activity {
+public class SecondModule extends Activity implements View.OnClickListener {
 
-    class resimler {
+    private boolean isMediaReady = true;
+    private MediaPlayer error;
 
-        public int resim1;
-        public int resim2;
+    private static final String TAG = SecondModule.class.getSimpleName();
 
-        public resimler(int r1, int r2) {
-            resim1 = r1;
-            resim2 = r2;
-        }
-    }
-
-    resimler resimListesi[] = {
-            new resimler(R.drawable.a1, R.drawable.a2),
-            new resimler(R.drawable.i1, R.drawable.i2),
-            new resimler(R.drawable.p1, R.drawable.p2),
-            new resimler(R.drawable.s1, R.drawable.s2),
-            new resimler(R.drawable.y1, R.drawable.y2)
+    private Resimler resimListesi[] = {
+            new Resimler(R.drawable.a1, R.drawable.a2),
+            new Resimler(R.drawable.i1, R.drawable.i2),
+            new Resimler(R.drawable.p1, R.drawable.p2),
+            new Resimler(R.drawable.s1, R.drawable.s2),
+            new Resimler(R.drawable.y1, R.drawable.y2),
+            new Resimler(R.drawable.pilot1, R.drawable.pilot2),
+            new Resimler(R.drawable.dentist1, R.drawable.dentist2),
     };
 
-    int correct = 0, mod;
-    int wrong = R.raw.error;
-    int selection = -1;
-    MediaPlayer mp;
+    private int correct = 0, mod;
+    private int wrong = R.raw.error;
+    private int selection = -1;
+    private MediaPlayer mp;
+    private ImageButton[] imgbtns=new ImageButton[6];
+    private  int[] positions;
 
-    ImageButton[] imgbtns=new ImageButton[6];
+    private Handler mediaHandler = new Handler();
+    private Runnable mediaWatchdogRunnable = new Runnable() {
+        @Override
+        public void run() {
 
-    void shuffle(int arr[]) {
-        Random rnd = new Random();
-
-        for(int i=0; i<arr.length; i++) {
-            int p1 = rnd.nextInt(arr.length);
-            int p2 = rnd.nextInt(arr.length);
-
-            int t = arr[p1];
-            arr[p1] = arr[p2];
-            arr[p2] = t;
+            if(mp!=null){
+                mp.stop();
+                mp.release();
+            }
         }
-    }
-
-    void set(ImageButton btn, int ind, int positions[], int indices[]) {
-        if(positions[ind]%2 == 1)
-            btn.setImageResource(resimListesi[indices[positions[ind]/2]].resim2);
-        else
-            btn.setImageResource(resimListesi[indices[positions[ind]/2]].resim1);
-    }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +52,9 @@ public class SecondModule extends Activity {
 
         mp = MediaPlayer.create(SecondModule.this, R.raw.match);
         mp.start();
-        mp = null;
+
+        mediaHandler.postDelayed(mediaWatchdogRunnable,3000L);
+
 
         imgbtns[0] = (ImageButton) findViewById(R.id.ib1);
         imgbtns[1] = (ImageButton) findViewById(R.id.ib2);
@@ -91,41 +70,96 @@ public class SecondModule extends Activity {
 
         shuffle(indices);
 
-        final int[] positions = new int[6];
+        positions = new int[6];
 
         for(int i=0; i<6 ; i++)
             positions[i] = i;
 
         shuffle(positions);
 
-        View.OnClickListener l = new View.OnClickListener() {
-            public void onClick(View v) {
-                if(selection == -1) {
-                    selection = (int)v.getTag();
-                    imgbtns[selection].setImageAlpha(128);
-                }
-                else {
-                    int c = (int)v.getTag();
-                    imgbtns[selection].setImageAlpha(255);
-
-                    if(positions[c] / 2 == positions[selection] / 2) {
-                        imgbtns[c].setVisibility(View.INVISIBLE);
-                        imgbtns[selection].setVisibility(View.INVISIBLE);
-
-                        correct++;
-                        if(correct == 3)
-
-                            EnterActivity.change(SecondModule.this);
-                    }
-                    selection = -1;
-                }
-            }
-        };
-
         for(int i=0; i<6 ; i++) {
             set(imgbtns[i], i, positions, indices);
             imgbtns[i].setTag(i);
-            imgbtns[i].setOnClickListener(l);
+            imgbtns[i].setOnClickListener(this);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(selection == -1) {
+            selection = (int)v.getTag();
+            imgbtns[selection].setImageAlpha(128);
+        }
+        else {
+            int c = (int)v.getTag();
+            imgbtns[selection].setImageAlpha(255);
+
+            if(positions[c] / 2 != positions[selection] / 2) {
+                errorSound();
+            }
+
+            if(positions[c] / 2 == positions[selection] / 2) {
+                imgbtns[c].setVisibility(View.INVISIBLE);
+                imgbtns[selection].setVisibility(View.INVISIBLE);
+
+                correct++;
+                Log.i(TAG,"Correct : " + correct);
+                if(correct == 3) {
+                    EnterActivity.change(SecondModule.this);
+                }
+            }
+            selection = -1;
+
+        }
+    }
+
+    private class Resimler {
+
+        public int resim1;
+        public int resim2;
+
+        public Resimler(int r1, int r2) {
+            resim1 = r1;
+            resim2 = r2;
+        }
+    }
+
+    private void shuffle(int arr[]) {
+        Random rnd = new Random();
+
+        for(int i=0; i<arr.length; i++) {
+            int p1 = rnd.nextInt(arr.length);
+            int p2 = rnd.nextInt(arr.length);
+
+            int t = arr[p1];
+            arr[p1] = arr[p2];
+            arr[p2] = t;
+        }
+    }
+
+    private void set(ImageButton btn, int ind, int positions[], int indices[]) {
+        if(positions[ind]%2 == 1)
+            btn.setImageResource(resimListesi[indices[positions[ind]/2]].resim2);
+        else
+            btn.setImageResource(resimListesi[indices[positions[ind]/2]].resim1);
+
+    }
+
+    private synchronized void errorSound() {
+
+        if (isMediaReady) {
+            error = MediaPlayer.create(SecondModule.this, R.raw.error);
+            error.start();
+            isMediaReady = false;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    error.stop();
+                    error.release();
+                    isMediaReady = true;
+                }
+            }, 500L);
         }
     }
 }
