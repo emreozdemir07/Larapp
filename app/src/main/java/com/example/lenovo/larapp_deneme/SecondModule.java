@@ -13,8 +13,13 @@ public class SecondModule extends Activity implements View.OnClickListener {
 
     private boolean isMediaReady = true;
     private MediaPlayer error;
-
+    private int correct = 0;
+    private int selection = -1;
+    private MediaPlayer mp;
+    private ImageButton[] imgbtns=new ImageButton[6];
+    private  int[] positions;
     private static final String TAG = SecondModule.class.getSimpleName();
+    private Handler mediaHandler = new Handler();
 
     private Resimler resimListesi[] = {
             new Resimler(R.drawable.a1, R.drawable.a2),
@@ -26,14 +31,9 @@ public class SecondModule extends Activity implements View.OnClickListener {
             new Resimler(R.drawable.dentist1, R.drawable.dentist2),
     };
 
-    private int correct = 0, mod;
-    private int wrong = R.raw.error;
-    private int selection = -1;
-    private MediaPlayer mp;
-    private ImageButton[] imgbtns=new ImageButton[6];
-    private  int[] positions;
 
-    private Handler mediaHandler = new Handler();
+
+
     private Runnable mediaWatchdogRunnable = new Runnable() {
         @Override
         public void run() {
@@ -118,7 +118,7 @@ public class SecondModule extends Activity implements View.OnClickListener {
         public int resim1;
         public int resim2;
 
-        public Resimler(int r1, int r2) {
+        public  Resimler(int r1, int r2) {
             resim1 = r1;
             resim2 = r2;
         }

@@ -7,15 +7,20 @@ import android.os.Bundle;
 import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.ImageButton;
+
 import java.util.Random;
 
 public class FirstModule extends Activity {
 
-    private MediaPlayer wrongmusic,question;
+    private MediaPlayer wrongmusic, question;
     private boolean isMediaReady = true;
     Random rnd = new Random();
     ConstraintLayout layout;
     int[] sayi = {0, 0, 0};
+    int correct, mod;
+    ImageButton img1;
+    ImageButton img2;
+    ImageButton img3;
 
     final int[][] resim = {
             {
@@ -66,11 +71,6 @@ public class FirstModule extends Activity {
 
     final int[] arkaplan = {R.drawable.bg1, R.drawable.bg2, R.drawable.bg3, R.drawable.bg4, R.drawable.bg5};
 
-    int correct, mod;
-
-    ImageButton img1;
-    ImageButton img2;
-    ImageButton img3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

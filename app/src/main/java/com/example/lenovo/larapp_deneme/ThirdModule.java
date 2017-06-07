@@ -22,6 +22,7 @@ public class ThirdModule extends Activity implements View.OnClickListener {
     private MediaPlayer error,different;
     private List<Integer> numbers = new ArrayList<>();
     private boolean isMediaReady = true;
+    int correct, mod;
 
     final int[] anaresim = {
             R.drawable.basketball1, R.drawable.car1, R.drawable.clothes1, R.drawable.footbal1,
@@ -55,7 +56,7 @@ public class ThirdModule extends Activity implements View.OnClickListener {
             }
     };
 
-    int correct, mod;
+
 
 
     @Override

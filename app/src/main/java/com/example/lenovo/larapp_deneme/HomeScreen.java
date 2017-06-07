@@ -10,7 +10,7 @@ import android.widget.Toast;
 public class HomeScreen extends AppCompatActivity {
 
     ConstraintLayout layout;
-    ImageButton play,about;
+    ImageButton play, about;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class HomeScreen extends AppCompatActivity {
         about.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(HomeScreen.this,"Emre ÖZDEMİR", Toast.LENGTH_LONG).show();
+                Toast.makeText(HomeScreen.this, "Emre ÖZDEMİR Graduation Project", Toast.LENGTH_LONG).show();
             }
         });
     }
